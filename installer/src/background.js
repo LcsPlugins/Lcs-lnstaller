@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
 const os = require('os');
-const fs = require('fs');
+var fs = require('fs');
 const https = require('https');
 
 let mainWindow;
@@ -33,9 +33,8 @@ function createWindow() {
         height: 600,
         resizable: false,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
-            enableRemoteModule: false
+            preload: path.join(__dirname, 'preload.js'),
         }
     });
 

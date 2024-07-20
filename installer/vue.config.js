@@ -1,4 +1,11 @@
-module.exports = {
+module.exports =
+{
+    configureWebpack: {
+        target: 'web',
+    },
+    transpileDependencies: [
+        "electron"
+    ],
     pluginOptions: {
         electronBuilder: {
             mainProcessFile: './src/background.js',
@@ -17,3 +24,5 @@ module.exports = {
         },
     },
 };
+
+
