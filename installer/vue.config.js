@@ -9,16 +9,23 @@ module.exports =
     pluginOptions: {
         electronBuilder: {
             mainProcessFile: './src/background.js',
-            preload: 'public/preload.js',
+            preload: './src/preload.js',
             builderOptions: {
                 appId: 'dev.lucasmachado.lcspluginsinstaller',
                 productName: 'LcsPlugins',
                 directories: {
-                    buildResources: 'public'
+                    output: 'dist_electron', // Diretório onde os arquivos serão gerados
+                    buildResources: 'public', // Diretório para recursos de construção (ícones, etc.)
                 },
                 win: {
                     icon: 'build/icons/icon.png'
-                }
+                },
+                extraFiles: [
+                    {
+                        "from": "public/",
+                        "to": "resources"
+                    }
+                ]
             },
 
         },

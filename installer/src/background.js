@@ -28,11 +28,14 @@ const injectorLink = 'https://raw.githubusercontent.com/LcsPlugins/runelite-plug
 const configInjectorLink = 'https://raw.githubusercontent.com/LcsPlugins/runelite-plugins/master/config.json';
 
 function createWindow() {
+
     mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
         resizable: false,
+        icon: './build/icons/icon.png',
         webPreferences: {
+            webSecurity: false,
             contextIsolation: true,
             preload: path.join(__dirname, 'preload.js'),
         }
@@ -40,7 +43,7 @@ function createWindow() {
 
     const startUrl = process.env.NODE_ENV === 'development'
         ? 'http://localhost:8080'
-        : `file://${path.join(__dirname, '../dist/index.html')}`;
+        : `file://${path.join(__dirname, '/index.html')}`;
 
     mainWindow.loadURL(startUrl);
 

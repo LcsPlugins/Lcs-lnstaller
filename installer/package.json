@@ -12,6 +12,7 @@
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
   },
+  "main": "./background.js",
   "dependencies": {
     "axios": "^0.21.1",
     "dotenv": "^8.2.0",
