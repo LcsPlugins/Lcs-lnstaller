@@ -1,8 +1,8 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, protocol } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
 const os = require('os');
-var fs = require('fs');
+const fs = require('fs');
 const https = require('https');
 
 let mainWindow;
@@ -20,20 +20,19 @@ const configInjectorPath = path.join(userDir, 'AppData', 'Local', 'RuneLite', 'c
 const externalPluginsDir = path.join(userDir, '.runelite', 'externalplugins');
 const pluginPath = path.join(externalPluginsDir, `${latestVersion}.jar`);
 
-//Runelite
+// Runelite
 const runelitePath = path.join(userDir, 'AppData', 'Local', 'RuneLite', 'RuneLite.exe');
 
-//URLS
+// URLs
 const injectorLink = 'https://raw.githubusercontent.com/LcsPlugins/runelite-plugins/master/EthanVannInstaller.jar';
 const configInjectorLink = 'https://raw.githubusercontent.com/LcsPlugins/runelite-plugins/master/config.json';
 
 function createWindow() {
-
     mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
         resizable: false,
-        icon: './build/icons/icon.png',
+        icon: path.join(__dirname, 'build', 'icons', 'icon.png'),
         webPreferences: {
             webSecurity: false,
             contextIsolation: true,
@@ -43,7 +42,7 @@ function createWindow() {
 
     const startUrl = process.env.NODE_ENV === 'development'
         ? 'http://localhost:8080'
-        : `file://${path.join(__dirname, '/index.html')}`;
+        : `app://./index.html`;
 
     mainWindow.loadURL(startUrl);
 
@@ -53,6 +52,14 @@ function createWindow() {
 }
 
 app.on('ready', async () => {
+    // Register the custom protocol
+    protocol.registerFileProtocol('app', (request, callback) => {
+        const url = request.url.substr(6); // Strip off 'app://'
+        callback({ path: path.normalize(`${__dirname}/${url}`) });
+    }, (error) => {
+        if (error) console.error('Failed to register protocol');
+    });
+
     createWindow();
     await getLatestVersion();
 });
@@ -87,23 +94,22 @@ ipcMain.on('open-runelite', () => {
         console.log(`stdout: ${stdout}`);
     });
 
-      // Fechar a janela principal
-  if (mainWindow) {
-    mainWindow.close();
-  }
-  
+    // Fechar a janela principal
+    if (mainWindow) {
+        mainWindow.close();
+    }
 });
 
 ipcMain.handle('has-Injector', async () => {
     return fs.existsSync(injectorPath);
-})
+});
 
 ipcMain.handle('install-Injector', function hasInjector() {
     if (!fs.existsSync(injectorPath)) {
         downloadFile(configInjectorLink, configInjectorPath);
         return downloadFile(injectorLink, injectorPath);
     }
-})
+});
 
 ipcMain.handle('install-Plugins', async (event, latest) => {
     const releaseUrl = `https://raw.githubusercontent.com/LcsPlugins/runelite-plugins/master/releases/${latest}.jar`;
@@ -112,13 +118,12 @@ ipcMain.handle('install-Plugins', async (event, latest) => {
         fs.mkdirSync(externalPluginsDir, { recursive: true });
     }
     downloadFile(releaseUrl, pluginPath);
-})
-
+});
 
 ipcMain.handle('has-Plugins', async (event, latest) => {
     var pluginPath1 = path.join(externalPluginsDir, `${latest}.jar`);
     return fs.existsSync(externalPluginsDir) && fs.existsSync(pluginPath1);
-})
+});
 
 async function getLatestVersion() {
     const versionUrl = 'https://raw.githubusercontent.com/LcsPlugins/runelite-plugins/master/version.json?';
@@ -138,7 +143,7 @@ async function getLatestVersion() {
             res.on('end', () => {
                 try {
                     const jsonData = JSON.parse(data);
-                    latestVersion = JSON.parse(data);
+                    latestVersion = jsonData;
                     resolve(jsonData);
                 } catch (error) {
                     reject(error);
